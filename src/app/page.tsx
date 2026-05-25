@@ -114,7 +114,7 @@ function PolaroidCard({ photo, index, onOpen }: { photo: Photo; index: number; o
   return (
     <div
       className="polaroid fade-in-up wobble cursor-pointer"
-      onClick={() => onOpen(photo)}
+      onClick={() => { console.log("POLAROID_CLICK", photo); onOpen(photo); }}
       style={{
         transform: `rotate(${rot}deg)`,
         width: "100%",
@@ -485,6 +485,7 @@ export default function Home() {
             position: "fixed", inset: 0, zIndex: 1000,
             background: "rgba(0,0,0,0.92)",
             display: "flex", alignItems: "center", justifyContent: "center",
+                zIndex: 999999,
             padding: "20px",
             cursor: "zoom-out",
           }}
@@ -502,6 +503,7 @@ export default function Home() {
             )}
             <button
               onClick={() => setLightbox(null)}
+              data-lightbox="1"
               style={{
                 position: "absolute", top: -16, right: -16,
                 background: "rgba(233,30,99,0.8)", border: "none", borderRadius: "50%",
