@@ -102,8 +102,7 @@ function DaysCounter() {
         ))}
       </div>
     </div>
-
-      
+  );
 }
 
 function PolaroidCard({ photo, index, onOpen }: { photo: Photo; index: number; onOpen: (p: Photo) => void }) {
@@ -135,8 +134,7 @@ function PolaroidCard({ photo, index, onOpen }: { photo: Photo; index: number; o
         <div className="polaroid-caption">{photo.caption}</div>
       )}
     </div>
-
-      
+  );
 }
 
 function EmptyPolaroid({ index }: { index: number }) {
@@ -158,8 +156,7 @@ function EmptyPolaroid({ index }: { index: number }) {
       </div>
       <div className="polaroid-caption" style={{ color: "#999" }}>наше фото</div>
     </div>
-
-      
+  );
 }
 
 export default function Home() {
@@ -474,17 +471,19 @@ export default function Home() {
           </div>
         </footer>
       </div>
-    </div>
 
       {/* Lightbox */}
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
           style={{
-            position: "fixed", inset: 0, zIndex: 1000,
+            position: "fixed",
+            inset: 0,
+            zIndex: 999999,
             background: "rgba(0,0,0,0.92)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-                zIndex: 999999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             padding: "20px",
             cursor: "zoom-out",
           }}
@@ -504,14 +503,25 @@ export default function Home() {
               onClick={() => setLightbox(null)}
               data-lightbox="1"
               style={{
-                position: "absolute", top: -16, right: -16,
-                background: "rgba(233,30,99,0.8)", border: "none", borderRadius: "50%",
-                width: 36, height: 36, color: "white", fontSize: 18, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
+                position: "absolute",
+                top: -16,
+                right: -16,
+                background: "rgba(233,30,99,0.8)",
+                border: "none",
+                borderRadius: "50%",
+                width: 36,
+                height: 36,
+                color: "white",
+                fontSize: 18,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >✕</button>
           </div>
         </div>
       )}
+    </div>
   );
 }
