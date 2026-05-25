@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, serial, integer } from "drizzle-orm/pg-core";
 
 export const photos = pgTable("photos", {
   id: serial("id").primaryKey(),
@@ -11,6 +11,6 @@ export const photos = pgTable("photos", {
 
 export const settings = pgTable("settings", {
   id: serial("id").primaryKey(),
-  soundcloud_url: text("soundcloud_url"),
+  soundcloud_url: text("soundcloud_url").default(""),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });

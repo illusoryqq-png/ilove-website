@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { settings } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "soundcloud_url is required" }, { status: 400 });
     }
 
-    await db.update(settings).set({ soundcloud_url });
+    await db.update(settings).set({ soundcloud_url }).where(eq(settings.id, 1));
 
     return NextResponse.json({ success: true, message: "Setting updated" });
   } catch (error) {
