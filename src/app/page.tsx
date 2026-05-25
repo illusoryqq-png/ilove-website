@@ -11,12 +11,10 @@ interface Photo {
   createdAt: string;
 }
 
-interface Settings {
-  soundcloud_url?: string;
-}
-
-// Предзаданные углы наклона для полароидов
 const ROTATIONS = [-6, 4, -3, 7, -5, 3, -7, 5, -4, 6, -2, 8];
+
+// Твой плейлист прямо сюда
+const SOUNDCLOUD_URL = "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A2242650149&color=%23dbb9e0&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true";
 
 function DaysCounter() {
   const [days, setDays] = useState<number>(0);
@@ -56,7 +54,6 @@ function DaysCounter() {
 
   return (
     <div className="text-center py-16 px-4 relative">
-      {/* Sparkles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {["✦", "✧", "⋆", "✦", "✧", "⋆", "✦", "✧"].map((s, i) => (
           <span
@@ -86,7 +83,6 @@ function DaysCounter() {
         дней <span className="heartbeat text-red-400">♥</span>
       </p>
 
-      {/* Time breakdown */}
       <div className="flex justify-center gap-6 mt-4">
         {[
           { val: hours, label: "часов" },
@@ -111,7 +107,7 @@ function PolaroidCard({ photo, index, onOpen }: { photo: Photo; index: number; o
   return (
     <div
       className="polaroid fade-in-up wobble cursor-pointer"
-      onClick={() => { console.log("POLAROID_CLICK", photo); onOpen(photo); }}
+      onClick={() => onOpen(photo)}
       style={{
         transform: `rotate(${rot}deg)`,
         width: "100%",
@@ -119,7 +115,6 @@ function PolaroidCard({ photo, index, onOpen }: { photo: Photo; index: number; o
         margin: "0 auto",
       }}
     >
-      {/* Tape */}
       <div className="tape" />
       <div style={{ height: "180px", overflow: "hidden", background: "#1a1a1a" }}>
         <img
@@ -157,52 +152,12 @@ function EmptyPolaroid({ index }: { index: number }) {
   );
 }
 
-function SoundcloudWidget({ soundcloudUrl }: { soundcloudUrl: string }) {
-  useEffect(() => {
-    if ((window as any).SC && (window as any).SC.Widget) {
-      (window as any).SC.Widget.load(soundcloudUrl, {
-        height: 450,
-        color: "#e91e63",
-      });
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://w.soundcloud.com/player/api.js";
-      script.async = true;
-      document.body.appendChild(script);
-      script.onload = () => {
-        if ((window as any).SC && (window as any).SC.Widget) {
-          (window as any).SC.Widget.load(soundcloudUrl, {
-            height: 450,
-            color: "#e91e63",
-          });
-        }
-      };
-    }
-  }, [soundcloudUrl]);
-
-  return (
-    <div className="soundcloud-wrapper max-w-3xl mx-auto">
-      <iframe
-        width="100%"
-        height="450"
-        scrolling="no"
-        frameBorder="0"
-        allow="autoplay"
-        src={soundcloudUrl}
-        style={{ display: "block" }}
-      />
-    </div>
-  );
-}
-
 export default function Home() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [lightbox, setLightbox] = useState<Photo | null>(null);
-  const [settings, setSettings] = useState<Settings>({});
   const [loading, setLoading] = useState(true);
   const [konamiIndex, setKonamiIndex] = useState(0);
 
-  // Konami-like secret key combo: typing "love" navigates to admin
   const SECRET_KEYS = ["l", "o", "v", "e"];
 
   const handleKeyDown = useCallback(
@@ -229,30 +184,20 @@ export default function Home() {
   }, [handleKeyDown]);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchPhotos() {
       try {
-        const photosRes = await fetch("/api/photos");
-        const photosData = await photosRes.json() as Photo[];
-        setPhotos(Array.isArray(photosData) ? photosData : []);
+        const res = await fetch("/api/photos");
+        const data = await res.json() as Photo[];
+        setPhotos(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Failed to load photos:", error);
       } finally {
         setLoading(false);
       }
-      try {
-        const settingsRes = await fetch("/api/settings", {
-          cache: "no-store",
-        });
-        const settingsData = await settingsRes.json() as { settings: Settings };
-        setSettings(settingsData.settings || {});
-      } catch (error) {
-        console.error("Failed to load settings:", error);
-      }
     }
-    fetchData();
+    fetchPhotos();
   }, []);
 
-  // Decorative stickers as SVG/emoji
   const stickers = [
     { emoji: "🌸", size: 50, top: "8%", left: "5%", rot: -15 },
     { emoji: "🌸", size: 35, top: "12%", left: "85%", rot: 20 },
@@ -264,9 +209,6 @@ export default function Home() {
     { emoji: "💕", size: 40, top: "90%", left: "50%", rot: 0 },
   ];
 
-  const soundcloudUrl = settings.soundcloud_url ||
-    "https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=true&visual=true";
-
   const displayPhotos = photos.length >= 6 ? photos : [
     ...photos,
     ...Array(Math.max(0, 6 - photos.length)).fill(null),
@@ -274,7 +216,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "#0a0a0a" }}>
-      {/* Background glow blobs */}
       <div
         className="fixed pointer-events-none"
         style={{
@@ -298,7 +239,6 @@ export default function Home() {
         }}
       />
 
-      {/* Floating decorative stickers */}
       {stickers.map((s, i) => (
         <div
           key={i}
@@ -319,18 +259,14 @@ export default function Home() {
         </div>
       ))}
 
-      {/* Main content */}
       <div className="relative" style={{ zIndex: 3 }}>
-        {/* ===== HERO SECTION ===== */}
         <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20">
-          {/* Top decorative line */}
           <div className="flex items-center gap-4 mb-8 opacity-60">
             <div style={{ height: "1px", width: "80px", background: "linear-gradient(to right, transparent, #e91e63)" }} />
             <span className="font-caveat text-pink-400 text-sm tracking-[0.3em] uppercase">с любовью</span>
             <div style={{ height: "1px", width: "80px", background: "linear-gradient(to left, transparent, #e91e63)" }} />
           </div>
 
-          {/* Main title */}
           <div className="text-center mb-4 float-anim">
             <h1
               className="font-handwriting text-white leading-tight"
@@ -352,12 +288,10 @@ export default function Home() {
             </h2>
           </div>
 
-          {/* Subtitle */}
           <p className="font-caveat text-white/40 text-xl mt-4 tracking-widest">
             ✦ &nbsp; навсегда &nbsp; ✦
           </p>
 
-          {/* Counter */}
           <div
             className="mt-12 w-full max-w-2xl grunge-border rounded-2xl"
             style={{ background: "rgba(255,255,255,0.02)", backdropFilter: "blur(10px)" }}
@@ -365,21 +299,18 @@ export default function Home() {
             <DaysCounter />
           </div>
 
-          {/* Scroll hint */}
           <div className="mt-16 flex flex-col items-center gap-2 opacity-40">
             <span className="font-caveat text-white/60 text-sm tracking-widest">прокрути вниз</span>
             <div style={{ fontSize: "20px" }}>↓</div>
           </div>
         </section>
 
-        {/* ===== DECORATIVE DIVIDER ===== */}
         <div className="flex items-center justify-center gap-6 py-4 px-8 opacity-30">
           <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, transparent, #e91e63)" }} />
           <span className="font-caveat text-pink-400 text-2xl">♥</span>
           <div style={{ flex: 1, height: "1px", background: "linear-gradient(to left, transparent, #e91e63)" }} />
         </div>
 
-        {/* ===== GALLERY SECTION ===== */}
         <section className="py-16 px-4 md:px-8">
           <div className="text-center mb-16">
             <h3
@@ -434,7 +365,6 @@ export default function Home() {
           )}
         </section>
 
-        {/* ===== LOVE NOTE SECTION ===== */}
         <section className="py-16 px-4">
           <div
             className="max-w-2xl mx-auto text-center grunge-border rounded-2xl p-10"
@@ -457,9 +387,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ===== SOUNDCLOUD FOOTER ===== */}
         <footer className="mt-8 pb-0">
-          {/* Torn paper decorative top */}
           <div
             style={{
               height: "30px",
@@ -486,7 +414,16 @@ export default function Home() {
               </p>
             </div>
 
-            <SoundcloudWidget soundcloudUrl={soundcloudUrl} />
+            <div className="max-w-3xl mx-auto">
+              <iframe
+                width="100%"
+                height="450"
+                scrolling="no"
+                frameBorder="no"
+                allow="autoplay; encrypted-media"
+                src={SOUNDCLOUD_URL}
+              />
+            </div>
 
             <div className="text-center py-10">
               <p className="font-caveat text-white/20 text-sm tracking-widest">
@@ -500,7 +437,6 @@ export default function Home() {
         </footer>
       </div>
 
-      {/* Lightbox */}
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
@@ -529,7 +465,6 @@ export default function Home() {
             )}
             <button
               onClick={() => setLightbox(null)}
-              data-lightbox="1"
               style={{
                 position: "absolute",
                 top: -16,
