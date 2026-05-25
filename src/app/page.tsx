@@ -240,7 +240,9 @@ export default function Home() {
         setLoading(false);
       }
       try {
-        const settingsRes = await fetch("/api/settings");
+        const settingsRes = await fetch("/api/settings", {
+          cache: "no-store",
+        });
         const settingsData = await settingsRes.json() as { settings: Settings };
         setSettings(settingsData.settings || {});
       } catch (error) {
