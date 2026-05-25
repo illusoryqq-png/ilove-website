@@ -36,7 +36,6 @@ export default function AdminPage() {
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  // Check session storage for saved token
   useEffect(() => {
     const saved = sessionStorage.getItem("admin_token");
     if (saved) {
@@ -51,9 +50,9 @@ export default function AdminPage() {
         fetch("/api/photos", { headers: { "x-admin-password": t } }),
         fetch("/api/settings"),
       ]);
-      const photosData = await photosRes.json() as { photos: Photo[] };
+      const photosData = await photosRes.json() as Photo[];
       const settingsData = await settingsRes.json() as { settings: { soundcloud_url?: string } };
-      setPhotos(photosData.photos || []);
+      setPhotos(Array.isArray(photosData) ? photosData : []);
       setSoundcloudUrl(settingsData.settings?.soundcloud_url || "");
     } catch (e) {
       console.error(e);
@@ -184,14 +183,12 @@ export default function AdminPage() {
     }
   }
 
-  // ===== LOGIN SCREEN =====
   if (!isAuthenticated) {
     return (
       <div
         className="min-h-screen flex items-center justify-center px-4"
         style={{ background: "#0a0a0a" }}
       >
-        {/* Glow */}
         <div
           className="fixed pointer-events-none"
           style={{
@@ -203,7 +200,6 @@ export default function AdminPage() {
             background: "radial-gradient(ellipse, rgba(233,30,99,0.08) 0%, transparent 70%)",
           }}
         />
-
         <div
           className="relative w-full max-w-sm rounded-2xl p-8"
           style={{
@@ -217,7 +213,6 @@ export default function AdminPage() {
             <h1 className="font-handwriting text-white text-3xl">Админ-панель</h1>
             <p className="font-caveat text-white/30 text-sm mt-1">Введите пароль для входа</p>
           </div>
-
           <form onSubmit={handleLogin} className="space-y-4">
             <input
               type="password"
@@ -230,15 +225,10 @@ export default function AdminPage() {
             {loginError && (
               <p className="font-caveat text-red-400 text-sm text-center">{loginError}</p>
             )}
-            <button
-              type="submit"
-              className="admin-btn w-full"
-              disabled={loginLoading}
-            >
+            <button type="submit" className="admin-btn w-full" disabled={loginLoading}>
               {loginLoading ? "Проверяю..." : "Войти"}
             </button>
           </form>
-
           <div className="mt-6 text-center">
             <a
               href="/"
@@ -252,10 +242,8 @@ export default function AdminPage() {
     );
   }
 
-  // ===== ADMIN PANEL =====
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a" }}>
-      {/* Header */}
       <header
         className="sticky top-0 z-50 px-6 py-4"
         style={{
@@ -293,7 +281,6 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-10 space-y-10">
-        {/* ===== PHOTO UPLOAD ===== */}
         <section
           className="rounded-2xl p-6"
           style={{
@@ -304,9 +291,7 @@ export default function AdminPage() {
           <h2 className="font-handwriting text-white text-3xl mb-6 flex items-center gap-3">
             <span>📸</span> Загрузить фото
           </h2>
-
           <form onSubmit={handleUpload} className="space-y-5">
-            {/* Drop zone */}
             <div
               className={`drop-zone ${dragOver ? "drag-over" : ""}`}
               onClick={() => fileInputRef.current?.click()}
@@ -353,7 +338,6 @@ export default function AdminPage() {
               />
             </div>
 
-            {/* Caption + Rotation */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="font-caveat text-white/50 text-sm mb-1 block">
@@ -422,7 +406,6 @@ export default function AdminPage() {
           </form>
         </section>
 
-        {/* ===== PHOTO GALLERY MANAGEMENT ===== */}
         <section
           className="rounded-2xl p-6"
           style={{
@@ -433,7 +416,6 @@ export default function AdminPage() {
           <h2 className="font-handwriting text-white text-3xl mb-6 flex items-center gap-3">
             <span>🗂️</span> Все фото ({photos.length})
           </h2>
-
           {photos.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-5xl mb-3">🌸</div>
@@ -461,7 +443,6 @@ export default function AdminPage() {
                     alt={photo.caption || "Photo"}
                     style={{ width: "100%", height: 140, objectFit: "cover", display: "block" }}
                   />
-                  {/* Overlay on hover */}
                   <div
                     className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" }}
@@ -488,7 +469,6 @@ export default function AdminPage() {
           )}
         </section>
 
-        {/* ===== SOUNDCLOUD SETTINGS ===== */}
         <section
           className="rounded-2xl p-6"
           style={{
@@ -502,7 +482,6 @@ export default function AdminPage() {
           <p className="font-caveat text-white/30 text-sm mb-6">
             Вставьте URL или iframe-код плейлиста SoundCloud
           </p>
-
           <form onSubmit={handleSaveSoundcloud} className="space-y-4">
             <div>
               <label className="font-caveat text-white/50 text-sm mb-1 block">
@@ -517,8 +496,6 @@ export default function AdminPage() {
                 style={{ resize: "vertical", fontFamily: "monospace", fontSize: 13 }}
               />
             </div>
-
-            {/* Preview */}
             {soundcloudUrl && (
               <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
                 <iframe
@@ -527,13 +504,14 @@ export default function AdminPage() {
                   scrolling="no"
                   frameBorder="no"
                   allow="autoplay"
-                  src={soundcloudUrl.includes("<iframe") ?
-                    soundcloudUrl.match(/src="([^"]+)"/)?.[1] || soundcloudUrl
-                    : soundcloudUrl}
+                  src={
+                    soundcloudUrl.includes("<iframe")
+                      ? soundcloudUrl.match(/src="([^"]+)"/)?.[1] || soundcloudUrl
+                      : soundcloudUrl
+                  }
                 />
               </div>
             )}
-
             {soundcloudMsg && (
               <p
                 className="font-caveat text-lg text-center"
@@ -542,17 +520,10 @@ export default function AdminPage() {
                 {soundcloudMsg}
               </p>
             )}
-
-            <button
-              type="submit"
-              className="admin-btn py-3 px-8"
-              disabled={soundcloudSaving}
-            >
+            <button type="submit" className="admin-btn py-3 px-8" disabled={soundcloudSaving}>
               {soundcloudSaving ? "Сохраняю..." : "💾 Сохранить плейлист"}
             </button>
           </form>
-
-          {/* Help */}
           <div
             className="mt-6 rounded-xl p-4"
             style={{ background: "rgba(233,30,99,0.05)", border: "1px solid rgba(233,30,99,0.1)" }}
@@ -569,7 +540,6 @@ export default function AdminPage() {
           </div>
         </section>
 
-        {/* Stats */}
         <section className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             { label: "Фотографий", value: photos.length, emoji: "📸" },
