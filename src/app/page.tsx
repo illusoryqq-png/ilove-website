@@ -197,9 +197,9 @@ export default function Home() {
           fetch("/api/photos"),
           fetch("/api/settings"),
         ]);
-        const photosData = await photosRes.json() as { photos: Photo[] };
+        const photosData = await photosRes.json() as Photo[];
         const settingsData = await settingsRes.json() as { settings: Settings };
-        setPhotos(photosData.photos || []);
+        setPhotos(Array.isArray(photosData) ? photosData : []);
         setSettings(settingsData.settings || {});
       } catch (error) {
         console.error("Failed to load data:", error);
