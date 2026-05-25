@@ -102,10 +102,46 @@ function DaysCounter() {
         ))}
       </div>
     </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            cursor: "zoom-out",
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
+            <img
+              src={lightbox.url}
+              alt={lightbox.caption || "Фото"}
+              style={{ maxWidth: "90vw", maxHeight: "80vh", objectFit: "contain", borderRadius: 8, display: "block" }}
+            />
+            {lightbox.caption && (
+              <p style={{ textAlign: "center", color: "rgba(255,255,255,0.7)", fontFamily: "Caveat, cursive", fontSize: "1.4rem", marginTop: 12 }}>
+                {lightbox.caption}
+              </p>
+            )}
+            <button
+              onClick={() => setLightbox(null)}
+              style={{
+                position: "absolute", top: -16, right: -16,
+                background: "rgba(233,30,99,0.8)", border: "none", borderRadius: "50%",
+                width: 36, height: 36, color: "white", fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >✕</button>
+          </div>
+        </div>
+      )}
   );
 }
 
-function PolaroidCard({ photo, index }: { photo: Photo; index: number }) {
+function PolaroidCard({ photo, index, onOpen }: { photo: Photo; index: number; onOpen: (p: Photo) => void }) {
   const rot = photo.rotation && photo.rotation !== "0"
     ? parseFloat(photo.rotation)
     : ROTATIONS[index % ROTATIONS.length];
@@ -113,6 +149,7 @@ function PolaroidCard({ photo, index }: { photo: Photo; index: number }) {
   return (
     <div
       className="polaroid fade-in-up wobble cursor-pointer"
+      onClick={() => onOpen(photo)}
       style={{
         transform: `rotate(${rot}deg)`,
         width: "100%",
@@ -133,6 +170,42 @@ function PolaroidCard({ photo, index }: { photo: Photo; index: number }) {
         <div className="polaroid-caption">{photo.caption}</div>
       )}
     </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            cursor: "zoom-out",
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
+            <img
+              src={lightbox.url}
+              alt={lightbox.caption || "Фото"}
+              style={{ maxWidth: "90vw", maxHeight: "80vh", objectFit: "contain", borderRadius: 8, display: "block" }}
+            />
+            {lightbox.caption && (
+              <p style={{ textAlign: "center", color: "rgba(255,255,255,0.7)", fontFamily: "Caveat, cursive", fontSize: "1.4rem", marginTop: 12 }}>
+                {lightbox.caption}
+              </p>
+            )}
+            <button
+              onClick={() => setLightbox(null)}
+              style={{
+                position: "absolute", top: -16, right: -16,
+                background: "rgba(233,30,99,0.8)", border: "none", borderRadius: "50%",
+                width: 36, height: 36, color: "white", fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >✕</button>
+          </div>
+        </div>
+      )}
   );
 }
 
@@ -155,11 +228,48 @@ function EmptyPolaroid({ index }: { index: number }) {
       </div>
       <div className="polaroid-caption" style={{ color: "#999" }}>наше фото</div>
     </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            cursor: "zoom-out",
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
+            <img
+              src={lightbox.url}
+              alt={lightbox.caption || "Фото"}
+              style={{ maxWidth: "90vw", maxHeight: "80vh", objectFit: "contain", borderRadius: 8, display: "block" }}
+            />
+            {lightbox.caption && (
+              <p style={{ textAlign: "center", color: "rgba(255,255,255,0.7)", fontFamily: "Caveat, cursive", fontSize: "1.4rem", marginTop: 12 }}>
+                {lightbox.caption}
+              </p>
+            )}
+            <button
+              onClick={() => setLightbox(null)}
+              style={{
+                position: "absolute", top: -16, right: -16,
+                background: "rgba(233,30,99,0.8)", border: "none", borderRadius: "50%",
+                width: 36, height: 36, color: "white", fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >✕</button>
+          </div>
+        </div>
+      )}
   );
 }
 
 export default function Home() {
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [lightbox, setLightbox] = useState<Photo | null>(null);
   const [settings, setSettings] = useState<Settings>({});
   const [loading, setLoading] = useState(true);
   const [konamiIndex, setKonamiIndex] = useState(0);
@@ -379,7 +489,7 @@ export default function Home() {
             >
               {displayPhotos.map((photo, i) =>
                 photo ? (
-                  <PolaroidCard key={photo.id} photo={photo} index={i} />
+                  <PolaroidCard key={photo.id} photo={photo} index={i} onOpen={setLightbox} />
                 ) : (
                   <EmptyPolaroid key={`empty-${i}`} index={i} />
                 )
@@ -470,5 +580,41 @@ export default function Home() {
         </footer>
       </div>
     </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1000,
+            background: "rgba(0,0,0,0.92)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px",
+            cursor: "zoom-out",
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
+            <img
+              src={lightbox.url}
+              alt={lightbox.caption || "Фото"}
+              style={{ maxWidth: "90vw", maxHeight: "80vh", objectFit: "contain", borderRadius: 8, display: "block" }}
+            />
+            {lightbox.caption && (
+              <p style={{ textAlign: "center", color: "rgba(255,255,255,0.7)", fontFamily: "Caveat, cursive", fontSize: "1.4rem", marginTop: 12 }}>
+                {lightbox.caption}
+              </p>
+            )}
+            <button
+              onClick={() => setLightbox(null)}
+              style={{
+                position: "absolute", top: -16, right: -16,
+                background: "rgba(233,30,99,0.8)", border: "none", borderRadius: "50%",
+                width: 36, height: 36, color: "white", fontSize: 18, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >✕</button>
+          </div>
+        </div>
+      )}
   );
 }
