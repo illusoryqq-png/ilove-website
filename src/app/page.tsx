@@ -27,8 +27,6 @@ function DaysCounter() {
 
   useEffect(() => {
     setMounted(true);
-    // Точка отсчёта: 25 мая 2024 = 731 день к 25 мая 2026
-    // Начало отношений = 25 мая 2024 (2 года назад от 25 мая 2026)
     const startDate = new Date("2024-05-25T00:00:00");
 
     const update = () => {
@@ -155,6 +153,44 @@ function EmptyPolaroid({ index }: { index: number }) {
         <span style={{ fontSize: "3rem", color: "#333" }}>{placeholders[index % placeholders.length]}</span>
       </div>
       <div className="polaroid-caption" style={{ color: "#999" }}>наше фото</div>
+    </div>
+  );
+}
+
+function SoundcloudWidget({ soundcloudUrl }: { soundcloudUrl: string }) {
+  useEffect(() => {
+    if ((window as any).SC && (window as any).SC.Widget) {
+      (window as any).SC.Widget.load(soundcloudUrl, {
+        height: 450,
+        color: "#e91e63",
+      });
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://w.soundcloud.com/player/api.js";
+      script.async = true;
+      document.body.appendChild(script);
+      script.onload = () => {
+        if ((window as any).SC && (window as any).SC.Widget) {
+          (window as any).SC.Widget.load(soundcloudUrl, {
+            height: 450,
+            color: "#e91e63",
+          });
+        }
+      };
+    }
+  }, [soundcloudUrl]);
+
+  return (
+    <div className="soundcloud-wrapper max-w-3xl mx-auto">
+      <iframe
+        width="100%"
+        height="450"
+        scrolling="no"
+        frameBorder="0"
+        allow="autoplay"
+        src={soundcloudUrl}
+        style={{ display: "block" }}
+      />
     </div>
   );
 }
@@ -448,17 +484,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="soundcloud-wrapper max-w-3xl mx-auto">
-              <iframe
-                width="100%"
-                height="450"
-                scrolling="no"
-                frameBorder="no"
-                allow="autoplay"
-                src={soundcloudUrl}
-                style={{ display: "block" }}
-              />
-            </div>
+            <SoundcloudWidget soundcloudUrl={soundcloudUrl} />
 
             <div className="text-center py-10">
               <p className="font-caveat text-white/20 text-sm tracking-widest">
