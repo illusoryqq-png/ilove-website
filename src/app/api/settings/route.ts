@@ -4,7 +4,13 @@ import { settings } from "@/db/schema";
 
 export async function GET() {
   try {
-    const allSettings = await db.select().from(settings).limit(1);
+    let allSettings = await db.select().from(settings).limit(1);
+    
+    // Если записи нет - создаём пустую
+    if (allSettings.length === 0) {
+      await db.insert(settings).values({ soundcloud_url: "" });
+      allSettings = await db.select().from(settings).limit(1);
+    }
     
     const row = allSettings[0];
     const settingsMap: Record<string, string | null | undefined> = {
@@ -39,7 +45,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "soundcloud_url is required" }, { status: 400 });
     }
 
-    await db.update(settings).set({ soundcloud_url });
+    // Проверяем есть ли записи
+    const existing = await db.select().from(settings);
+    
+    if (existing.length > 0) {
+      await db.update(settings).set({ soundcloud_url });
+    } else {
+      await db.insert(settings).values({ soundcloud_url });
+    }
 
     return NextResponse.json({ success: true, message: "Setting updated" });
   } catch (error) {
