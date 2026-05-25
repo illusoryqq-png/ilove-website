@@ -11,7 +11,6 @@ export const photos = pgTable("photos", {
 
 export const settings = pgTable("settings", {
   id: serial("id").primaryKey(),
-  key: text("key").notNull().unique(),
-  value: text("value").notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  soundcloud_url: text("soundcloud_url"),
+  created_at: timestamp("created_at").defaultNow().notNull(),
 });
