@@ -45,19 +45,24 @@ export default function AdminPage() {
   }, []);
 
   const fetchData = useCallback(async (t: string) => {
-    try {
-      const [photosRes, settingsRes] = await Promise.all([
-        fetch("/api/photos", { headers: { "x-admin-password": t } }),
-        fetch("/api/settings"),
-      ]);
-      const photosData = await photosRes.json() as Photo[];
-      const settingsData = await settingsRes.json() as { settings: { soundcloud_url?: string } };
+  try {
+    const photosRes = await fetch("/api/photos", {
+      headers: { "x-admin-password": t },
+    });
+    const photosData = await photosRes.json() as Photo[];
     setPhotos(Array.isArray(photosData) ? photosData : []);
-      setSoundcloudUrl(settingsData.settings?.soundcloud_url || "");
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
+  } catch (e) {
+    console.error("Photos error:", e);
+  }
+
+  try {
+    const settingsRes = await fetch("/api/settings");
+    const settingsData = await settingsRes.json() as { settings: { soundcloud_url?: string } };
+    setSoundcloudUrl(settingsData.settings?.soundcloud_url || "");
+  } catch (e) {
+    console.error("Settings error:", e);
+  }
+}, []);
 
   useEffect(() => {
     if (isAuthenticated && token) {
