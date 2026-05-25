@@ -193,18 +193,20 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [photosRes, settingsRes] = await Promise.all([
-          fetch("/api/photos"),
-          fetch("/api/settings"),
-        ]);
+        const photosRes = await fetch("/api/photos");
         const photosData = await photosRes.json() as Photo[];
-        const settingsData = await settingsRes.json() as { settings: Settings };
         setPhotos(Array.isArray(photosData) ? photosData : []);
-        setSettings(settingsData.settings || {});
       } catch (error) {
-        console.error("Failed to load data:", error);
+        console.error("Failed to load photos:", error);
       } finally {
         setLoading(false);
+      }
+      try {
+        const settingsRes = await fetch("/api/settings");
+        const settingsData = await settingsRes.json() as { settings: Settings };
+        setSettings(settingsData.settings || {});
+      } catch (error) {
+        console.error("Failed to load settings:", error);
       }
     }
     fetchData();
