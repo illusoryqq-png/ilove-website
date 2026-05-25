@@ -4,12 +4,11 @@ import { settings } from "@/db/schema";
 
 export async function GET() {
   try {
-    const allSettings = await db.select().from(settings);
+    const allSettings = await db.select().from(settings).limit(1);
     
-    // Преобразуем в объект (берём первую строку, так как таблица имеет одну запись)
     const row = allSettings[0];
-    const settingsMap: Record<string, string> = {
-      soundcloud_url: row?.soundcloud_url || "",
+    const settingsMap: Record<string, string | null | undefined> = {
+      soundcloud_url: row?.soundcloud_url || undefined,
     };
     
     return NextResponse.json({ settings: settingsMap });
@@ -40,7 +39,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "soundcloud_url is required" }, { status: 400 });
     }
 
-    // Обновляем первую (единственную) запись в таблице
     await db.update(settings).set({ soundcloud_url });
 
     return NextResponse.json({ success: true, message: "Setting updated" });
