@@ -165,6 +165,7 @@ function EmptyPolaroid({ index }: { index: number }) {
 export default function Home() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [lightbox, setLightbox] = useState<Photo | null>(null);
+  const [lightbox, setLightbox] = useState<Photo | null>(null);
   const [settings, setSettings] = useState<Settings>({});
   const [loading, setLoading] = useState(true);
   const [konamiIndex, setKonamiIndex] = useState(0);
