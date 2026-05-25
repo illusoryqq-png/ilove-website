@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { photos } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { desc } from "drizzle-orm";
+import { createClient } from "@supabase/supabase-js";
+
+// Инициализация Supabase клиента
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   try {
@@ -18,6 +21,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Проверка пароля (как у тебя и было)
     const adminPassword = process.env.ADMIN_PASSWORD;
     const authHeader = request.headers.get("x-admin-password");
     if (authHeader !== adminPassword) {
@@ -33,41 +37,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
-    }
-
-    // Max 10MB
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 });
-    }
-
+    // 2. Подготовка файла
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Generate unique filename
     const ext = file.name.split(".").pop() || "jpg";
-    const filename = `photo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const filename = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
 
-    const uploadDir = join(process.cwd(), "public", "uploads");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
+    // 3. Загрузка в Supabase Storage (бакет "photos")
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("photos")
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error("Supabase Storage Error:", uploadError);
+      return NextResponse.json({ error: "Failed to upload to cloud storage" }, { status: 500 });
     }
 
-    const filePath = join(uploadDir, filename);
-    await writeFile(filePath, buffer);
+    // 4. Получение публичного URL
+    const { data: { publicUrl } } = supabase.storage
+      .from("photos")
+      .getPublicUrl(filename);
 
-    const url = `/uploads/${filename}`;
+    // 5. Запись в базу данных через Drizzle
     const [newPhoto] = await db
       .insert(photos)
-      .values({ filename, url, caption, rotation })
+      .values({ 
+        filename, 
+        url: publicUrl, // Вот тут теперь ссылка из облака
+        caption, 
+        rotation 
+      })
       .returning();
 
     return NextResponse.json({ photo: newPhoto }, { status: 201 });
   } catch (error) {
-    console.error("Error uploading photo:", error);
+    console.error("Upload Error:", error);
     return NextResponse.json({ error: "Failed to upload photo" }, { status: 500 });
   }
 }
