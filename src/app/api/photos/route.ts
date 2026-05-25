@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       filename,
       url: publicUrl,
       caption,
-      rotation: parseInt(rotation) || 0,
+      rotation: rotation,
     }).returning();
 
     return NextResponse.json({ success: true, url: publicUrl, photo: inserted }, { status: 201 });
