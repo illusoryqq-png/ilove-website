@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { photos } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { unlink } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { supabase } from "@/lib/supabase"; // убедись что путь правильный
 
 export async function DELETE(
   request: NextRequest,
@@ -29,10 +27,17 @@ export async function DELETE(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
-    // Delete file from disk
-    const filePath = join(process.cwd(), "public", photo.url);
-    if (existsSync(filePath)) {
-      await unlink(filePath);
+    // Delete file from Supabase Storage
+    const filename = photo.url.split("/").pop();
+    if (filename) {
+      const { error: storageError } = await supabase.storage
+        .from("photos")
+        .remove([filename]);
+
+      if (storageError) {
+        console.error("Storage delete error:", storageError);
+        // не бросаем — всё равно удаляем из БД
+      }
     }
 
     // Delete from DB
