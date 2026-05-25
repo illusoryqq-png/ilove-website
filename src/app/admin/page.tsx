@@ -52,7 +52,7 @@ export default function AdminPage() {
       ]);
       const photosData = await photosRes.json() as Photo[];
       const settingsData = await settingsRes.json() as { settings: { soundcloud_url?: string } };
-      setPhotos(Array.isArray(photosData) ? photosData : []);
+     setPhotos(Array.isArray(photosData) ? photosData : []);
       setSoundcloudUrl(settingsData.settings?.soundcloud_url || "");
     } catch (e) {
       console.error(e);
